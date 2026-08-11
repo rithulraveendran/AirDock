@@ -39,7 +39,7 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/AirDock.git
+   git clone https://github.com/rithulraveendran/AirDock.git
    cd AirDock
    ```
 
