@@ -1,0 +1,31 @@
+{
+    "enabled": false,
+    "show_window_on_start": false,
+    "cooldown_seconds": 1.0,
+    "swipe_threshold_x": 0.18,
+    "swipe_threshold_y": 0.15,
+    "fist_ratio_threshold": 0.85,
+    "fist_hold_seconds": 0.5,
+    "camera_index": 0,
+    "startup_registered": true,
+    "color_joint_active": [
+        255,
+        0,
+        255
+    ],
+    "color_line_active": [
+        255,
+        255,
+        0
+    ],
+    "color_joint_paused": [
+        0,
+        0,
+        255
+    ],
+    "color_line_paused": [
+        128,
+        128,
+        128
+    ]
+}
