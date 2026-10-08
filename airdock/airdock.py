@@ -61,19 +61,44 @@ DEFAULT_CONFIG ={
 def get_resource_path (relative_path ):
     """Get absolute path to resource, works for dev and for PyInstaller."""
     try :
-
         base_path =sys ._MEIPASS 
+        return os .path .join (base_path ,relative_path )
     except Exception :
-        base_path =os .path .abspath (".")
-    return os .path .join (base_path ,relative_path )
+        pass 
+    script_dir =os .path .dirname (os .path .abspath (__file__ ))
+    script_path =os .path .join (script_dir ,relative_path )
+    if os .path .exists (script_path ):
+        return script_path 
+    cwd_path =os .path .join (os .path .abspath (".") ,relative_path )
+    if os .path .exists (cwd_path ):
+        return cwd_path 
+    parent_path =os .path .join (os .path .dirname (script_dir ),relative_path )
+    if os .path .exists (parent_path ):
+        return parent_path 
+    return script_path 
+
+def get_config_path ():
+    """Resolve config.json location across working directory, script directory, and root."""
+    cwd_config =os .path .join (os .path .abspath (".") ,CONFIG_FILE )
+    if os .path .exists (cwd_config ):
+        return cwd_config 
+    script_dir =os .path .dirname (os .path .abspath (__file__ ))
+    script_config =os .path .join (script_dir ,CONFIG_FILE )
+    if os .path .exists (script_config ):
+        return script_config 
+    parent_config =os .path .join (os .path .dirname (script_dir ),CONFIG_FILE )
+    if os .path .exists (parent_config ):
+        return parent_config 
+    return parent_config 
 
 def load_config ():
-    if not os .path .exists (CONFIG_FILE ):
-        with open (CONFIG_FILE ,'w')as f :
+    config_file =get_config_path ()
+    if not os .path .exists (config_file ):
+        with open (config_file ,'w')as f :
             json .dump (DEFAULT_CONFIG ,f ,indent =4 )
         return DEFAULT_CONFIG .copy ()
     try :
-        with open (CONFIG_FILE ,'r')as f :
+        with open (config_file ,'r')as f :
             config =json .load (f )
 
 
@@ -96,8 +121,9 @@ def load_config ():
         return DEFAULT_CONFIG .copy ()
 
 def save_config (config ):
+    config_file =get_config_path ()
     try :
-        with open (CONFIG_FILE ,'w')as f :
+        with open (config_file ,'w')as f :
             json .dump (config ,f ,indent =4 )
     except Exception as e :
         print (f"Error saving config: {e }")
@@ -107,7 +133,7 @@ def ensure_model_exists ():
     if not os .path .exists (model_path ):
         print (f"Downloading model file to {model_path }...")
 
-        urllib .request .urlretrieve (MODEL_URL ,MODEL_FILE )
+        urllib .request .urlretrieve (MODEL_URL ,model_path )
         print ("Model downloaded.")
 
 class GestureController :
@@ -164,7 +190,7 @@ class GestureController :
             log_file =os .path .join (log_dir ,"airdock_error.log")
             err_msg =f"Exception in capture thread: {e }\n\n{traceback .format_exc ()}"
             try :
-                with open (log_file ,"w")as f :
+                with open (log_file ,"w",encoding ="utf-8")as f :
                     f .write (err_msg )
             except :
                 pass 
@@ -439,16 +465,17 @@ class GestureController :
                                     elif abs_dy >abs_dx *1.3 :
                                         if abs_dy >thresh_y :
 
+                                            v_steps =self .config .get ("volume_steps_per_swipe",5 )
                                             if hand_label =="Left":
                                                 current_gesture ="SWIPE (VOLUME DOWN)"
-                                                pyautogui .press ('volumedown',presses =5 )
+                                                pyautogui .press ('volumedown',presses =v_steps )
                                                 self .last_action_time =now 
                                                 self .volume_hold_active =True 
                                                 self .volume_hold_direction ="down"
                                                 self .last_volume_step_time =now 
                                             else :
                                                 current_gesture ="SWIPE (VOLUME UP)"
-                                                pyautogui .press ('volumeup',presses =5 )
+                                                pyautogui .press ('volumeup',presses =v_steps )
                                                 self .last_action_time =now 
                                                 self .volume_hold_active =True 
                                                 self .volume_hold_direction ="up"
@@ -487,6 +514,7 @@ class PremiumApp (ctk .CTk ):
         self .enabled_state =self .config ["enabled"]
         self .always_on_top_state =self .config ["always_on_top"]
         self .minimize_on_close_state =self .config ["minimize_on_close"]
+        self .show_window_on_start_state =self .config .get ("show_window_on_start",True )
 
 
         self .queue =queue .Queue (maxsize =1 )
@@ -559,6 +587,8 @@ class PremiumApp (ctk .CTk ):
 
 
         self .poll_queue ()
+        if not self .show_window_on_start_state :
+            self .withdraw ()
 
     def create_pages (self ):
 
@@ -697,6 +727,11 @@ class PremiumApp (ctk .CTk ):
         if self .config ["startup_registered"]:
             self .sw_boot .select ()
         self .sw_boot .pack (padx =15 ,pady =10 ,anchor ="w")
+ 
+        self .sw_startup_show =ctk .CTkSwitch (app_card ,text ="Show window on startup",progress_color ="#00f0ff",command =self .toggle_show_window_on_start )
+        if self .show_window_on_start_state :
+            self .sw_startup_show .select ()
+        self .sw_startup_show .pack (padx =15 ,pady =10 ,anchor ="w")
 
         self .pages ["settings"]=settings_page 
 
@@ -856,6 +891,11 @@ class PremiumApp (ctk .CTk ):
             winreg .CloseKey (key )
         except Exception as e :
             print (f"Failed to modify startup registry: {e }")
+        save_config (self .config )
+
+    def toggle_show_window_on_start (self ):
+        self .show_window_on_start_state =self .sw_startup_show .get ()==1 
+        self .config ["show_window_on_start"]=self .show_window_on_start_state 
         save_config (self .config )
 
     def apply_always_on_top (self ):
