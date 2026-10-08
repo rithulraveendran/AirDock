@@ -1,13 +1,34 @@
 {
-    "enabled": false,
-    "show_window_on_start": false,
-    "cooldown_seconds": 1.0,
-    "swipe_threshold_x": 0.18,
-    "swipe_threshold_y": 0.15,
-    "fist_ratio_threshold": 0.85,
+    "enabled": true,
+    "show_window_on_start": true,
+    "cooldown_seconds": 1.2,
+    "swipe_threshold_x": 0.12,
+    "swipe_threshold_y": 0.10,
+    "fist_ratio_threshold": 1.25,
     "fist_hold_seconds": 0.5,
     "camera_index": 0,
-    "startup_registered": true,
+    "startup_registered": false,
+    "always_on_top": true,
+    "volume_steps_per_swipe": 5,
+    "minimize_on_close": true,
+    "hotkey_swipe_right": [
+        "alt",
+        "tab"
+    ],
+    "hotkey_swipe_left": [
+        "alt",
+        "shift",
+        "tab"
+    ],
+    "hotkey_swipe_up": [
+        "volumeup"
+    ],
+    "hotkey_swipe_down": [
+        "volumedown"
+    ],
+    "hotkey_fist": [
+        "printscreen"
+    ],
     "color_joint_active": [
         255,
         0,

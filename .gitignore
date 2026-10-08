@@ -17,4 +17,12 @@ dist/
 # Application specific
 *.exe
 hand_landmarker.task
+airdock/hand_landmarker.task
 airdock_error.log
+airdock/airdock_error.log
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
